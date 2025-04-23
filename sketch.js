@@ -22,7 +22,18 @@ function resetGame(){
         speed: 10
     };
    
+    resetBall();
+
+    createBlocks();
+
+    lives = 3;
+    currentLevel = 1;
+    score = 0;
+    gameState = "playing";
+
 }
+
+
 
 
 function createBlocks(){
@@ -72,7 +83,49 @@ function draw(){
 }
 
 function drawGame(){
+    //paddle
     fill (0,150,255);
     noStroke();
     rect(paddle.x,paddle.y,paddle.w,paddle.h, 5);
+    //pelota
+    fill(255);
+    noStroke()
+    circle(ball.x, ball.y, ball.r * 2);
+
+    for (let block of blocks) {
+        if (block.hits === 1){
+            fill (255,100,100); //bloque rojo
+        } else if (block.hits === 2){
+            fill(255,165,0); //doble golpe
+        } else if (block.hits === 3){
+            fill(255,215,0); //triple holpe
+        } else if (block.hits === -1){ 
+            fill(100,100,100); // irrompibles
+        }
+        noStroke();
+        rect(block.x, block.y, block.w, bloch.h,3);
+    }
+
+    if (gameState === "levelComplete"){
+        fill(255);
+        textSize(32);
+        textAlign(CENTER);
+        text("¡Nivel " + currentLevel + " completado!", width/2, height/2);
+        text("Preparando nivel " + (currentLevel + 1) + "...", width/2, height/2 + 40);
+    } else if (gameState === "gameOver"){
+        fill(255,0,0);
+        textSize(40);
+        textAlign(CENTER);
+        text("GAME OVER", width/2,height/2);
+        textSize(24);
+        text("Presiona ESPACIO para reiniciar", width/2, height/2 + 40);
+    } else if (gameState === "gameWin"){
+        fill (0, 255, 0);
+        textSize(40);
+        textAlign(CENTER);
+        text("VENCISTE EL JUEGO", width/2, height/2);
+        textSize(24);
+        text("Puntuacion final: " + score, width/2, height/2 + 40);
+        text("Presiona ESPACIO para jugar", width/2, height/2 + 80);
+    }
 }
