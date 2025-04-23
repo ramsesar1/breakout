@@ -92,7 +92,180 @@ function draw(){
 
     displayInfo();
 
+    if (gameState === "playing"){
+        if (keyIsDown(LEFT_ARROW)){ //paddle a la izquierda
+            paddle.x = max(0, paddle.x - paddle.speed);
+        } 
+        if (keyIsDown(RIGHT_ARROW)){ // paddle a la derecha
+            paddle.x = min (width - paddle.w, paddle.x + paddle.speed);
+        }
+        let nextX = ball.x + ball.xSpeed;
+        let nextY = ball.y + ball.ySpeed;
+
+        //colision con los bordes laterales
+        if (nextX + ball.r > width){
+            ball.x = width - ball.r;
+            ball.xSpeed *= -1;
+        } else if (nextX - ball.r < 0){
+            ball.x = ball.r;
+            ball.xSpeed *= -1;
+        } else {
+            ball.x = nextX;
+        }
+
+        //colision con borde superior
+        if (nextY - ball.r < 0){
+            ball.y = ball.r;
+            ball.ySpeed *= -1;
+        } else {
+            ball.y = nextY;
+        }
+
+        //colision con paddle y pelota
+        if (ball.y + ball.r > paddle.y && 
+            ball.y - ball.r < paddle.y + paddle.h &&
+            ball.x > paddle.x &&
+            ball.x < paddle.x + paddle.w){
+        
+
+            ball.y = paddle.y - ball.r;
+
+            //angulo de rebote en posicion del paddle
+            let hitPos = (ball.x - paddle.x) / paddle.w;
+            //angulo de rebote entre -60 y 60 grados
+            let angle = map (hitPos, 0, 1, -PI/3, PI/3);
+
+            let speed = sqrt(ball.xSpeed * ball.xSpeed + ball.ySpeed * ball.ySpeed);
+            ball.xSpeed = speed * sin(angle);
+            ball.ySpeed = -abs(speed * cos(angle));
+          }
+          if (ball.y > height){
+            lives--;
+            if (lives <= 0){
+                gameState = "gameOver";
+            } else {
+                resetBall();
+            }
+          }
+
+          //resetea lastCollision si la pelota no esta en contacto con ladrillo
+          let inContactWithAnyBlock = false;
+          for (let block of blocks){
+            if (checkBlockBallCollision(block)){
+                inContactWithAnyBlock = true;
+                break;
+            }
+          }
+          if (!inContactWithAnyBlock){
+            ball.lastCollision = null;
+          }
+          //checa colision con ladrillos
+          checkBlockCollisions();
+          
+          checkLevelComplete();
+    } else if (gameState === "levelComplete"){
+        transitionTimer++;
+        //cambiar nivel despues de 2 segundos
+        if(transitionTimer > 120){
+            currentLevel++;
+            if (currentLevel > maxLevel){
+                gameState = "gameWin";
+            } else {
+                resetBall();
+                createBlocks();
+                gameState = "playing";
+                transitionTimer = 0;
+            }
+        }
+    }
     drawGame();
+}
+
+//checa colision con ladrillo
+function checkBlockBallCollision(block) {
+    return (ball.x + ball.r > block.x && 
+            ball.x - ball.r < block.x + block.w &&
+            ball.y + ball.r > block.y && 
+            ball.y - ball.r < block.y + block.h);
+  }
+
+
+//
+function checkBlockCollisions(){
+    for (let i = blocks.length - 1; i >= 0; i--){
+        let block = blocks[i];
+
+        //checa que no sea el mismo bloque con el que hizo colision
+        if (checkBlockBallCollision(block) && ball.lastCollision !== block.id){
+            ball.lastCollision = block.id;
+            
+            //no pasa nada si es un bloque irrompible
+            if(block.hits === -1){
+                handleBallBlockCollision(block);
+            } else {
+                block.hits--;
+                
+                if (block.hits <= 0){
+                    blocks.splice(i,1);
+                    score++;
+                }
+                handleBallBlockCollision(block);
+            }
+            //solo una colision por frame
+            break;
+        }
+    }
+}
+
+function handleBallBlockCollision(block){
+
+    //determina direccion de origen de la pelota
+    let ballCenterX = ball.x;
+    let ballCenterY = ball.y;
+    let blockCenterX = block.x + block.w /2;
+    let blockCenterY = block.y + block.h /2;
+
+    let dx = ballCenterX - blockCenterX;
+    let dy = ballCenterY - blockCenterY;
+
+    //checa la mitad de los bloques
+    let blockHalfWidth = block.w / 2;
+    let blockHalfHeight = block.h / 2;
+
+    let overlapX = blockHalfWidth - abs(dx);
+    let overlapY = blockHalfHeight - abs(dy);
+
+    //rebote de la pelota en direccion de menor angulo
+    if (overlapX < overlapY){
+        ball.xSpeed = abs(ball.xSpeed) * (dx > 0 ? 1 : -1);
+
+        //ya no se quede atorada
+        if (dx > 0){
+            ball.x = block.x + block.w + ball.r;
+        } else {
+            ball.y = block.y - ball.r;
+        }
+    } else {
+        ball.ySpeed = abs(ball.ySpeed) * (dy > 0 ? 1 : -1);
+
+        if (dy > 0){
+            ball.y = block.y + block.h + ball.r;
+        } else {
+            ball.y = block.y - ball.r;
+        }
+    }
+}
+
+function checkLevelComplete(){
+    let breakableBlocks = 0;
+    for (let block of blocks){
+        if (block.hits !== -1){
+            breakableBlocks++;
+        }
+    }
+    if (breakableBlocks === 0){
+        gameState = "levelComplete";
+    }
 }
 
 function drawGame(){
@@ -116,7 +289,7 @@ function drawGame(){
             fill(100,100,100); // irrompibles
         }
         noStroke();
-        rect(block.x, block.y, block.w, bloch.h,3);
+        rect(block.x, block.y, block.w, block.h,3);
     }
 
     if (gameState === "levelComplete"){
@@ -150,4 +323,10 @@ function displayInfo(){
     text("Puntuacion: " + score, 20, 30);
     text("Vidas: "+ lives, 150,30);
     text("Nivel: "+currentLevel, 250, 30);
+}
+
+function keyPressed(){
+    if (key === " " && (gameState === "gameOver" || gameState === "gameWin")){
+        resetGame();
+    }
 }
