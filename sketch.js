@@ -33,6 +33,17 @@ function resetGame(){
 
 }
 
+function resetBall(){
+    let baseSpeed = 4 + (currentLevel - 1)*1.5;
+    ball = {
+        x: width / 2,
+        y: height / 2,
+        r: 10,
+        xSpeed: baseSpeed * (random() > 0.5 ? 1 : -1),
+        ySpeed: baseSpeed * -1,
+        lastCollision: null
+    };
+}
 
 
 
