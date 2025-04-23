@@ -21,7 +21,7 @@ function resetGame(){
         h: 15,
         speed: 10
     };
-   
+   // inicializa la pelota
     resetBall();
 
     createBlocks();
@@ -88,7 +88,9 @@ function createBlocks(){
 }
 
 function draw(){
+    background(0);
 
+    displayInfo();
 
     drawGame();
 }
@@ -139,4 +141,13 @@ function drawGame(){
         text("Puntuacion final: " + score, width/2, height/2 + 40);
         text("Presiona ESPACIO para jugar", width/2, height/2 + 80);
     }
+}
+
+function displayInfo(){
+    fill (255);
+    textSize(16);
+    textAlign(LEFT);
+    text("Puntuacion: " + score, 20, 30);
+    text("Vidas: "+ lives, 150,30);
+    text("Nivel: "+currentLevel, 250, 30);
 }
