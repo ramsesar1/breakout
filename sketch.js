@@ -8,8 +8,13 @@ let maxLevel = 3;
 let gameState = "playing"; 
 let transitionTimer = 0;
 
+function preload() {
+    fontArcade = loadFont("https://raw.githubusercontent.com/google/fonts/main/ofl/pressstart2p/PressStart2P-Regular.ttf");
+}
+
 function setup(){
     createCanvas(800,600);
+    textFont(fontArcade);   
     resetGame();
 }
 
@@ -88,7 +93,7 @@ function createBlocks(){
 }
 
 function draw(){
-    background(0);
+    background(15, 15, 35);
 
     displayInfo();
 
@@ -286,47 +291,46 @@ function drawGame(){
         } else if (block.hits === 3){
             fill(255,215,0); //triple holpe
         } else if (block.hits === -1){ 
-            fill(100,100,100); // irrompibles
+            fill(120); // irrompibles
         }
-        noStroke();
-        rect(block.x, block.y, block.w, block.h,3);
+        stroke(255);
+        strokeWeight(1);
+        rect(block.x, block.y, block.w, block.h, 4);
     }
 
-    if (gameState === "levelComplete"){
+    textAlign(CENTER);
+    if (gameState === "levelComplete") {
         fill(255);
-        textSize(32);
-        textAlign(CENTER);
-        text("¡Nivel " + currentLevel + " completado!", width/2, height/2);
-        text("Preparando nivel " + (currentLevel + 1) + "...", width/2, height/2 + 40);
-    } else if (gameState === "gameOver"){
-        fill(255,0,0);
-        textSize(40);
-        textAlign(CENTER);
-        text("GAME OVER", width/2,height/2);
-        textSize(24);
-        text("Presiona ESPACIO para reiniciar", width/2, height/2 + 40);
-    } else if (gameState === "gameWin"){
-        fill (0, 255, 0);
-        textSize(40);
-        textAlign(CENTER);
-        text("VENCISTE EL JUEGO", width/2, height/2);
-        textSize(24);
-        text("Puntuacion final: " + score, width/2, height/2 + 40);
-        text("Presiona ESPACIO para jugar", width/2, height/2 + 80);
+        textSize(18);
+        text("¡Nivel " + currentLevel + " completado!", width / 2, height / 2 - 20);
+        text("Preparando nivel " + (currentLevel + 1) + "...", width / 2, height / 2 + 10);
+    } else if (gameState === "gameOver") {
+        fill(255, 0, 0);
+        textSize(20);
+        text("GAME OVER", width / 2, height / 2);
+        textSize(12);
+        text("Presiona ESPACIO para reiniciar", width / 2, height / 2 + 30);
+    } else if (gameState === "gameWin") {
+        fill(0, 255, 0);
+        textSize(20);
+        text("¡VENCISTE EL JUEGO!", width / 2, height / 2);
+        textSize(12);
+        text("Puntuación final: " + score, width / 2, height / 2 + 30);
+        text("Presiona ESPACIO para jugar otra vez", width / 2, height / 2 + 60);
     }
 }
 
-function displayInfo(){
-    fill (255);
-    textSize(16);
+function displayInfo() {
+    fill(255);
+    textSize(10);
     textAlign(LEFT);
-    text("Puntuacion: " + score, 20, 30);
-    text("Vidas: "+ lives, 150,30);
-    text("Nivel: "+currentLevel, 250, 30);
+    text("Score: " + score, 20, 25);
+    text("Lives: " + lives, 150, 25);
+    text("Level: " + currentLevel, 280, 25);
 }
 
-function keyPressed(){
-    if (key === " " && (gameState === "gameOver" || gameState === "gameWin")){
+function keyPressed() {
+    if (key === " " && (gameState === "gameOver" || gameState === "gameWin")) {
         resetGame();
     }
 }
